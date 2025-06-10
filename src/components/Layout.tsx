@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { FileText, Users, Building, Menu, X } from 'lucide-react';
+import { FileText, Users, Building, Menu, X, LogOut } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -12,6 +13,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { signOut } = useAuth();
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: FileText },
@@ -21,10 +23,14 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate }) =>
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-card border-b border-border">
+      <header className="bg-card border-b border-border shadow-sm">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="sm" onClick={toggleSidebar} className="md:hidden">
@@ -36,21 +42,33 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate }) =>
             </div>
           </div>
           
-          <div className="hidden md:flex items-center space-x-2">
-            {menuItems.map((item) => {
-              const IconComponent = item.icon;
-              return (
-                <Button
-                  key={item.id}
-                  variant={currentView === item.id ? "default" : "ghost"}
-                  onClick={() => onNavigate(item.id)}
-                  className={currentView === item.id ? "bg-business-600 hover:bg-business-700" : ""}
-                >
-                  <IconComponent className="w-4 h-4 mr-2" />
-                  {item.label}
-                </Button>
-              );
-            })}
+          <div className="flex items-center space-x-2">
+            <div className="hidden md:flex items-center space-x-2">
+              {menuItems.map((item) => {
+                const IconComponent = item.icon;
+                return (
+                  <Button
+                    key={item.id}
+                    variant={currentView === item.id ? "default" : "ghost"}
+                    onClick={() => onNavigate(item.id)}
+                    className={currentView === item.id ? "bg-blue-600 hover:bg-blue-700" : ""}
+                  >
+                    <IconComponent className="w-4 h-4 mr-2" />
+                    {item.label}
+                  </Button>
+                );
+              })}
+            </div>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Sair
+            </Button>
           </div>
         </div>
       </header>
@@ -74,7 +92,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate }) =>
                     <Button
                       key={item.id}
                       variant={currentView === item.id ? "default" : "ghost"}
-                      className={`w-full justify-start ${currentView === item.id ? "bg-business-600 hover:bg-business-700" : ""}`}
+                      className={`w-full justify-start ${currentView === item.id ? "bg-blue-600 hover:bg-blue-700" : ""}`}
                       onClick={() => {
                         onNavigate(item.id);
                         setSidebarOpen(false);
@@ -85,6 +103,17 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate }) =>
                     </Button>
                   );
                 })}
+                
+                <div className="pt-4 border-t">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-gray-600"
+                    onClick={handleSignOut}
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sair
+                  </Button>
+                </div>
               </div>
             </Card>
           </div>
