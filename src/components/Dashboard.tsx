@@ -4,10 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, Filter, FileText, Calendar, MapPin, Settings, Eye } from 'lucide-react';
+import { Plus, Search, Filter, FileText, Calendar, MapPin, Settings, Eye, Paperclip } from 'lucide-react';
 import { useLicitacao } from '@/contexts/LicitacaoContext';
 import { StatusLicitacao } from '@/types/licitacao';
 import StatusSelector from './StatusSelector';
+import AnexosPDF from './AnexosPDF';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { STATUS_OPTIONS, getStatusColorSimple } from '@/utils/statusOptions';
 
 interface DashboardProps {
   onNovaLicitacao: () => void;
@@ -20,22 +23,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNovaLicitacao, onGerenciarCotac
   const [filtroStatus, setFiltroStatus] = useState<StatusLicitacao | 'todos'>('todos');
   const [buscaTexto, setBuscaTexto] = useState('');
   const [statusSelectorOpen, setStatusSelectorOpen] = useState<string | null>(null);
-
-  const getStatusColor = (status: StatusLicitacao) => {
-    const statusColors = {
-      'Proposta não Cadastrada': 'bg-red-100 text-red-800',
-      'Proposta Cadastrada': 'bg-yellow-100 text-yellow-800',
-      'Em Disputa': 'bg-blue-100 text-blue-800',
-      'Seleção de Fornecedores': 'bg-purple-100 text-purple-800',
-      'Aceita': 'bg-green-100 text-green-800',
-      'Aceita e Habilitada': 'bg-green-100 text-green-800',
-      'Aguardando Nota de Empenho': 'bg-orange-100 text-orange-800',
-      'Aguardando Entrega': 'bg-indigo-100 text-indigo-800',
-      'Entregue': 'bg-emerald-100 text-emerald-800',
-      'Cancelada': 'bg-gray-100 text-gray-800'
-    };
-    return statusColors[status] || 'bg-gray-100 text-gray-800';
-  };
+  const [anexosDialogOpen, setAnexosDialogOpen] = useState<string | null>(null);
 
   const handleStatusChange = (licitacaoId: string, novoStatus: StatusLicitacao) => {
     updateLicitacao(licitacaoId, { status: novoStatus });
@@ -133,16 +121,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNovaLicitacao, onGerenciarCotac
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todos os Status</SelectItem>
-                  <SelectItem value="Proposta não Cadastrada">Proposta não Cadastrada</SelectItem>
-                  <SelectItem value="Proposta Cadastrada">Proposta Cadastrada</SelectItem>
-                  <SelectItem value="Em Disputa">Em Disputa</SelectItem>
-                  <SelectItem value="Seleção de Fornecedores">Seleção de Fornecedores</SelectItem>
-                  <SelectItem value="Aceita">Aceita</SelectItem>
-                  <SelectItem value="Aceita e Habilitada">Aceita e Habilitada</SelectItem>
-                  <SelectItem value="Aguardando Nota de Empenho">Aguardando Nota de Empenho</SelectItem>
-                  <SelectItem value="Aguardando Entrega">Aguardando Entrega</SelectItem>
-                  <SelectItem value="Entregue">Entregue</SelectItem>
-                  <SelectItem value="Cancelada">Cancelada</SelectItem>
+                  {STATUS_OPTIONS.map((status) => (
+                    <SelectItem key={status} value={status}>{status}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -185,21 +166,36 @@ const Dashboard: React.FC<DashboardProps> = ({ onNovaLicitacao, onGerenciarCotac
                   <div className="flex items-center space-x-2">
                     <div className="relative">
                       <Badge 
-                        className={`${getStatusColor(licitacao.status)} cursor-pointer hover:opacity-80 transition-opacity`}
+                        className={`${getStatusColorSimple(licitacao.status)} cursor-pointer hover:opacity-80 transition-opacity`}
                         onClick={() => setStatusSelectorOpen(statusSelectorOpen === licitacao.id ? null : licitacao.id)}
                       >
                         {licitacao.status}
                       </Badge>
                       {statusSelectorOpen === licitacao.id && (
-                        <div className="absolute top-full right-0 mt-1 z-10">
-                          <StatusSelector
-                            currentStatus={licitacao.status}
-                            onStatusChange={(novoStatus) => handleStatusChange(licitacao.id, novoStatus)}
-                            onClose={() => setStatusSelectorOpen(null)}
-                          />
-                        </div>
+                        <StatusSelector
+                          currentStatus={licitacao.status}
+                          onStatusChange={(novoStatus) => handleStatusChange(licitacao.id, novoStatus)}
+                          onClose={() => setStatusSelectorOpen(null)}
+                        />
                       )}
                     </div>
+                    <Dialog open={anexosDialogOpen === licitacao.id} onOpenChange={(open) => setAnexosDialogOpen(open ? licitacao.id : null)}>
+                      <DialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                        >
+                          <Paperclip className="w-4 h-4 mr-2" />
+                          Anexos
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Anexos PDF - Aviso Nº {licitacao.numeroAviso}</DialogTitle>
+                        </DialogHeader>
+                        <AnexosPDF licitacaoId={licitacao.id} />
+                      </DialogContent>
+                    </Dialog>
                     <Button
                       size="sm"
                       variant="outline"

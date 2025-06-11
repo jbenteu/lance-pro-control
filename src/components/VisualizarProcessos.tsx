@@ -6,10 +6,13 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Search, Filter, Settings, Eye } from 'lucide-react';
+import { ArrowLeft, Search, Filter, Settings, Eye, Paperclip } from 'lucide-react';
 import { useLicitacao } from '@/contexts/LicitacaoContext';
 import { StatusLicitacao } from '@/types/licitacao';
 import StatusSelector from './StatusSelector';
+import AnexosPDF from './AnexosPDF';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { STATUS_OPTIONS, getStatusColorSimple } from '@/utils/statusOptions';
 
 interface VisualizarProcessosProps {
   onVoltar: () => void;
@@ -22,22 +25,7 @@ const VisualizarProcessos: React.FC<VisualizarProcessosProps> = ({ onVoltar, onG
   const [buscaTexto, setBuscaTexto] = useState('');
   const [statusSelectorOpen, setStatusSelectorOpen] = useState<string | null>(null);
   const [visualizacao, setVisualizacao] = useState<'cards' | 'tabela'>('cards');
-
-  const getStatusColor = (status: StatusLicitacao) => {
-    const statusColors = {
-      'Proposta não Cadastrada': 'bg-red-100 text-red-800',
-      'Proposta Cadastrada': 'bg-yellow-100 text-yellow-800',
-      'Em Disputa': 'bg-blue-100 text-blue-800',
-      'Seleção de Fornecedores': 'bg-purple-100 text-purple-800',
-      'Aceita': 'bg-green-100 text-green-800',
-      'Aceita e Habilitada': 'bg-green-100 text-green-800',
-      'Aguardando Nota de Empenho': 'bg-orange-100 text-orange-800',
-      'Aguardando Entrega': 'bg-indigo-100 text-indigo-800',
-      'Entregue': 'bg-emerald-100 text-emerald-800',
-      'Cancelada': 'bg-gray-100 text-gray-800'
-    };
-    return statusColors[status] || 'bg-gray-100 text-gray-800';
-  };
+  const [anexosDialogOpen, setAnexosDialogOpen] = useState<string | null>(null);
 
   const handleStatusChange = (licitacaoId: string, novoStatus: StatusLicitacao) => {
     updateLicitacao(licitacaoId, { status: novoStatus });
@@ -105,16 +93,9 @@ const VisualizarProcessos: React.FC<VisualizarProcessosProps> = ({ onVoltar, onG
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todos os Status</SelectItem>
-                  <SelectItem value="Proposta não Cadastrada">Proposta não Cadastrada</SelectItem>
-                  <SelectItem value="Proposta Cadastrada">Proposta Cadastrada</SelectItem>
-                  <SelectItem value="Em Disputa">Em Disputa</SelectItem>
-                  <SelectItem value="Seleção de Fornecedores">Seleção de Fornecedores</SelectItem>
-                  <SelectItem value="Aceita">Aceita</SelectItem>
-                  <SelectItem value="Aceita e Habilitada">Aceita e Habilitada</SelectItem>
-                  <SelectItem value="Aguardando Nota de Empenho">Aguardando Nota de Empenho</SelectItem>
-                  <SelectItem value="Aguardando Entrega">Aguardando Entrega</SelectItem>
-                  <SelectItem value="Entregue">Entregue</SelectItem>
-                  <SelectItem value="Cancelada">Cancelada</SelectItem>
+                  {STATUS_OPTIONS.map((status) => (
+                    <SelectItem key={status} value={status}>{status}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -181,33 +162,49 @@ const VisualizarProcessos: React.FC<VisualizarProcessosProps> = ({ onVoltar, onG
                     <TableCell>
                       <div className="relative">
                         <Badge 
-                          className={`${getStatusColor(licitacao.status)} cursor-pointer hover:opacity-80 transition-opacity`}
+                          className={`${getStatusColorSimple(licitacao.status)} cursor-pointer hover:opacity-80 transition-opacity`}
                           onClick={() => setStatusSelectorOpen(statusSelectorOpen === licitacao.id ? null : licitacao.id)}
                         >
                           {licitacao.status}
                         </Badge>
                         {statusSelectorOpen === licitacao.id && (
-                          <div className="absolute top-full left-0 mt-1 z-10">
-                            <StatusSelector
-                              currentStatus={licitacao.status}
-                              onStatusChange={(novoStatus) => handleStatusChange(licitacao.id, novoStatus)}
-                              onClose={() => setStatusSelectorOpen(null)}
-                            />
-                          </div>
+                          <StatusSelector
+                            currentStatus={licitacao.status}
+                            onStatusChange={(novoStatus) => handleStatusChange(licitacao.id, novoStatus)}
+                            onClose={() => setStatusSelectorOpen(null)}
+                          />
                         )}
                       </div>
                     </TableCell>
                     <TableCell>{new Date(licitacao.dataSessao).toLocaleDateString('pt-BR')}</TableCell>
                     <TableCell>{licitacao.itens.length}</TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => onGerenciarCotacoes(licitacao.id)}
-                      >
-                        <Settings className="w-4 h-4 mr-2" />
-                        Cotações
-                      </Button>
+                      <div className="flex items-center justify-end space-x-2">
+                        <Dialog open={anexosDialogOpen === licitacao.id} onOpenChange={(open) => setAnexosDialogOpen(open ? licitacao.id : null)}>
+                          <DialogTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                            >
+                              <Paperclip className="w-4 h-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle>Anexos PDF - Aviso Nº {licitacao.numeroAviso}</DialogTitle>
+                            </DialogHeader>
+                            <AnexosPDF licitacaoId={licitacao.id} />
+                          </DialogContent>
+                        </Dialog>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onGerenciarCotacoes(licitacao.id)}
+                        >
+                          <Settings className="w-4 h-4 mr-2" />
+                          Cotações
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -232,21 +229,36 @@ const VisualizarProcessos: React.FC<VisualizarProcessosProps> = ({ onVoltar, onG
                   <div className="flex items-center space-x-2">
                     <div className="relative">
                       <Badge 
-                        className={`${getStatusColor(licitacao.status)} cursor-pointer hover:opacity-80 transition-opacity`}
+                        className={`${getStatusColorSimple(licitacao.status)} cursor-pointer hover:opacity-80 transition-opacity`}
                         onClick={() => setStatusSelectorOpen(statusSelectorOpen === licitacao.id ? null : licitacao.id)}
                       >
                         {licitacao.status}
                       </Badge>
                       {statusSelectorOpen === licitacao.id && (
-                        <div className="absolute top-full right-0 mt-1 z-10">
-                          <StatusSelector
-                            currentStatus={licitacao.status}
-                            onStatusChange={(novoStatus) => handleStatusChange(licitacao.id, novoStatus)}
-                            onClose={() => setStatusSelectorOpen(null)}
-                          />
-                        </div>
+                        <StatusSelector
+                          currentStatus={licitacao.status}
+                          onStatusChange={(novoStatus) => handleStatusChange(licitacao.id, novoStatus)}
+                          onClose={() => setStatusSelectorOpen(null)}
+                        />
                       )}
                     </div>
+                    <Dialog open={anexosDialogOpen === licitacao.id} onOpenChange={(open) => setAnexosDialogOpen(open ? licitacao.id : null)}>
+                      <DialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                        >
+                          <Paperclip className="w-4 h-4 mr-2" />
+                          Anexos
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Anexos PDF - Aviso Nº {licitacao.numeroAviso}</DialogTitle>
+                        </DialogHeader>
+                        <AnexosPDF licitacaoId={licitacao.id} />
+                      </DialogContent>
+                    </Dialog>
                     <Button
                       size="sm"
                       variant="outline"
@@ -289,6 +301,20 @@ const VisualizarProcessos: React.FC<VisualizarProcessosProps> = ({ onVoltar, onG
           ))}
         </div>
       )}
+
+      <Dialog open={!!anexosDialogOpen} onOpenChange={(open) => setAnexosDialogOpen(open ? anexosDialogOpen : null)}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Anexos PDF - {anexosDialogOpen && licitacoesFiltradas.find(l => l.id === anexosDialogOpen) ? 
+                `Aviso Nº ${licitacoesFiltradas.find(l => l.id === anexosDialogOpen)?.numeroAviso}` : 
+                'Carregando...'
+              }
+            </DialogTitle>
+          </DialogHeader>
+          {anexosDialogOpen && <AnexosPDF licitacaoId={anexosDialogOpen} />}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

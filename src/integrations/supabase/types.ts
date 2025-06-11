@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      licitacao_anexos: {
+        Row: {
+          caminho_arquivo: string
+          created_at: string
+          id: string
+          licitacao_id: string
+          nome_arquivo: string
+          tamanho_arquivo: number | null
+          tipo_arquivo: string | null
+          updated_at: string
+        }
+        Insert: {
+          caminho_arquivo: string
+          created_at?: string
+          id?: string
+          licitacao_id: string
+          nome_arquivo: string
+          tamanho_arquivo?: number | null
+          tipo_arquivo?: string | null
+          updated_at?: string
+        }
+        Update: {
+          caminho_arquivo?: string
+          created_at?: string
+          id?: string
+          licitacao_id?: string
+          nome_arquivo?: string
+          tamanho_arquivo?: number | null
+          tipo_arquivo?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
