@@ -1,25 +1,27 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, Filter, FileText, Calendar, MapPin, Settings, Eye } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ArrowLeft, Search, Filter, Settings, Eye } from 'lucide-react';
 import { useLicitacao } from '@/contexts/LicitacaoContext';
 import { StatusLicitacao } from '@/types/licitacao';
 import StatusSelector from './StatusSelector';
 
-interface DashboardProps {
-  onNovaLicitacao: () => void;
+interface VisualizarProcessosProps {
+  onVoltar: () => void;
   onGerenciarCotacoes: (licitacaoId: string) => void;
-  onVisualizarProcessos: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onNovaLicitacao, onGerenciarCotacoes, onVisualizarProcessos }) => {
+const VisualizarProcessos: React.FC<VisualizarProcessosProps> = ({ onVoltar, onGerenciarCotacoes }) => {
   const { licitacoes, updateLicitacao } = useLicitacao();
   const [filtroStatus, setFiltroStatus] = useState<StatusLicitacao | 'todos'>('todos');
   const [buscaTexto, setBuscaTexto] = useState('');
   const [statusSelectorOpen, setStatusSelectorOpen] = useState<string | null>(null);
+  const [visualizacao, setVisualizacao] = useState<'cards' | 'tabela'>('cards');
 
   const getStatusColor = (status: StatusLicitacao) => {
     const statusColors = {
@@ -50,61 +52,31 @@ const Dashboard: React.FC<DashboardProps> = ({ onNovaLicitacao, onGerenciarCotac
     return matchStatus && matchTexto;
   });
 
-  const totalLicitacoes = licitacoes.length;
-  const licitacoesAbertas = licitacoes.filter(l => ['Proposta não Cadastrada', 'Proposta Cadastrada', 'Em Disputa'].includes(l.status)).length;
-  const licitacoesGanhas = licitacoes.filter(l => ['Aceita', 'Aceita e Habilitada', 'Aguardando Nota de Empenho', 'Aguardando Entrega', 'Entregue'].includes(l.status)).length;
-
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Dashboard de Licitações</h1>
-          <p className="text-muted-foreground">Gerencie e acompanhe suas licitações</p>
-        </div>
-        <div className="flex space-x-2">
-          <Button onClick={onVisualizarProcessos} variant="outline">
-            <Eye className="w-4 h-4 mr-2" />
-            Ver Todos os Processos
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Button variant="outline" onClick={onVoltar}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Voltar
           </Button>
-          <Button onClick={onNovaLicitacao} className="bg-business-600 hover:bg-business-700">
-            <Plus className="w-4 h-4 mr-2" />
-            Nova Licitação
-          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Todos os Processos</h1>
+            <p className="text-muted-foreground">Visualização completa de todas as licitações</p>
+          </div>
         </div>
-      </div>
-
-      {/* Cards de Resumo */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Licitações</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalLicitacoes}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Licitações Abertas</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{licitacoesAbertas}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Licitações Ganhas</CardTitle>
-            <MapPin className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{licitacoesGanhas}</div>
-          </CardContent>
-        </Card>
+        <div className="flex items-center space-x-2">
+          <Select value={visualizacao} onValueChange={(value) => setVisualizacao(value as 'cards' | 'tabela')}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="cards">Cards</SelectItem>
+              <SelectItem value="tabela">Tabela</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Filtros */}
@@ -150,27 +122,102 @@ const Dashboard: React.FC<DashboardProps> = ({ onNovaLicitacao, onGerenciarCotac
         </CardContent>
       </Card>
 
-      {/* Lista de Licitações */}
-      <div className="space-y-4">
-        {licitacoesFiltradas.length === 0 ? (
-          <Card>
-            <CardContent className="text-center py-12">
-              <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Nenhuma licitação encontrada</h3>
-              <p className="text-muted-foreground mb-4">
-                {licitacoes.length === 0 
-                  ? 'Comece criando sua primeira licitação'
-                  : 'Tente ajustar os filtros ou criar uma nova licitação'
-                }
-              </p>
-              <Button onClick={onNovaLicitacao} className="bg-business-600 hover:bg-business-700">
-                <Plus className="w-4 h-4 mr-2" />
-                Nova Licitação
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          licitacoesFiltradas.map((licitacao) => (
+      {/* Estatísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold">{licitacoesFiltradas.length}</div>
+            <p className="text-sm text-muted-foreground">Total Filtrado</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-blue-600">
+              {licitacoesFiltradas.filter(l => ['Proposta não Cadastrada', 'Proposta Cadastrada', 'Em Disputa'].includes(l.status)).length}
+            </div>
+            <p className="text-sm text-muted-foreground">Abertas</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-green-600">
+              {licitacoesFiltradas.filter(l => ['Aceita', 'Aceita e Habilitada', 'Aguardando Nota de Empenho', 'Aguardando Entrega', 'Entregue'].includes(l.status)).length}
+            </div>
+            <p className="text-sm text-muted-foreground">Ganhas</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-gray-600">
+              {licitacoesFiltradas.filter(l => l.status === 'Cancelada').length}
+            </div>
+            <p className="text-sm text-muted-foreground">Canceladas</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Conteúdo */}
+      {visualizacao === 'tabela' ? (
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Aviso</TableHead>
+                  <TableHead>Modalidade</TableHead>
+                  <TableHead>Órgão</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Data Sessão</TableHead>
+                  <TableHead>Itens</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {licitacoesFiltradas.map((licitacao) => (
+                  <TableRow key={licitacao.id}>
+                    <TableCell className="font-medium">{licitacao.numeroAviso}</TableCell>
+                    <TableCell>{licitacao.modalidade}</TableCell>
+                    <TableCell>{licitacao.orgaoResponsavel.nome}</TableCell>
+                    <TableCell>
+                      <div className="relative">
+                        <Badge 
+                          className={`${getStatusColor(licitacao.status)} cursor-pointer hover:opacity-80 transition-opacity`}
+                          onClick={() => setStatusSelectorOpen(statusSelectorOpen === licitacao.id ? null : licitacao.id)}
+                        >
+                          {licitacao.status}
+                        </Badge>
+                        {statusSelectorOpen === licitacao.id && (
+                          <div className="absolute top-full left-0 mt-1 z-10">
+                            <StatusSelector
+                              currentStatus={licitacao.status}
+                              onStatusChange={(novoStatus) => handleStatusChange(licitacao.id, novoStatus)}
+                              onClose={() => setStatusSelectorOpen(null)}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>{new Date(licitacao.dataSessao).toLocaleDateString('pt-BR')}</TableCell>
+                    <TableCell>{licitacao.itens.length}</TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onGerenciarCotacoes(licitacao.id)}
+                      >
+                        <Settings className="w-4 h-4 mr-2" />
+                        Cotações
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {licitacoesFiltradas.map((licitacao) => (
             <Card key={licitacao.id} className="hover:shadow-md transition-shadow">
               <CardHeader>
                 <div className="flex justify-between items-start">
@@ -239,11 +286,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onNovaLicitacao, onGerenciarCotac
                 </div>
               </CardContent>
             </Card>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
 
-export default Dashboard;
+export default VisualizarProcessos;
