@@ -2,6 +2,7 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
+import { LicitacaoProvider } from '@/contexts/LicitacaoContext';
 import Index from '@/pages/Index';
 
 const AuthenticatedApp: React.FC = () => {
@@ -22,7 +23,11 @@ const AuthenticatedApp: React.FC = () => {
     return <Navigate to="/login" replace />;
   }
 
-  return <Index />;
+  return (
+    <LicitacaoProvider>
+      <Index />
+    </LicitacaoProvider>
+  );
 };
 
 export default AuthenticatedApp;
