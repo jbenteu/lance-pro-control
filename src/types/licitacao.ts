@@ -18,23 +18,29 @@ export interface Orgao {
   uasg: string;
 }
 
-export interface Item {
+export interface Cotacao {
   id: string;
-  descricao: string;
-  quantidade: number;
-  marca: string;
-  modelo: string;
-  valorReferenciaUnitario: number;
-  valorReferenciaTotal: number;
-  fornecedorId?: string;
+  fornecedorId: string;
   fornecedor?: Fornecedor;
-  valorUnitario?: number;
-  valorTotal?: number;
+  valorUnitario: number;
+  valorTotal: number;
   freteEntrada?: number;
   freteSaida?: number;
   lanceMinimo?: number;
   porcentagemLucro?: number;
   lanceIdeal?: number;
+  marca?: string;
+  modelo?: string;
+}
+
+export interface Item {
+  id: string;
+  objeto: string;
+  especificacoes: string;
+  quantidade: number;
+  valorReferenciaUnitario: number;
+  valorReferenciaTotal: number;
+  cotacoes: Cotacao[];
 }
 
 export type StatusLicitacao = 
