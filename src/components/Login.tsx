@@ -20,10 +20,25 @@ const Login: React.FC = () => {
     setError('');
     setLoading(true);
 
+    console.log('Form submitted with:', { email, password: '***' });
+
+    if (!email || !password) {
+      setError('Por favor, preencha todos os campos.');
+      setLoading(false);
+      return;
+    }
+
     const { error } = await signIn(email, password);
     
     if (error) {
-      setError('Email ou senha incorretos. Verifique suas credenciais.');
+      console.error('Login error:', error);
+      if (error.message?.includes('Invalid login credentials')) {
+        setError('Email ou senha incorretos. Verifique suas credenciais.');
+      } else if (error.message?.includes('Email not confirmed')) {
+        setError('Email não confirmado. Verifique sua caixa de entrada.');
+      } else {
+        setError('Erro ao fazer login. Tente novamente.');
+      }
     }
     
     setLoading(false);
@@ -68,6 +83,7 @@ const Login: React.FC = () => {
                   className="pl-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                   placeholder="seu@email.com"
                   required
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -86,11 +102,13 @@ const Login: React.FC = () => {
                   className="pl-10 pr-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                   placeholder="••••••••"
                   required
+                  disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  disabled={loading}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -104,6 +122,12 @@ const Login: React.FC = () => {
             >
               {loading ? 'Entrando...' : 'Entrar'}
             </Button>
+
+            <div className="text-center text-sm text-gray-500 mt-4">
+              <p>Usuários de teste:</p>
+              <p>joaobenteu@sistema.com / @Brasil1!</p>
+              <p>vns@sistema.com / @Brasil1!</p>
+            </div>
           </form>
         </CardContent>
       </Card>

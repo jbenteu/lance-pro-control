@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { FileText, Users, Building, Menu, X, LogOut } from 'lucide-react';
+import { FileText, Users, Building, Menu, X, LogOut, UserPlus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface LayoutProps {
@@ -13,13 +13,18 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { signOut } = useAuth();
+  const { signOut, isAdmin } = useAuth();
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: FileText },
     { id: 'fornecedores', label: 'Fornecedores', icon: Users },
     { id: 'orgaos', label: 'Órgãos', icon: Building },
   ];
+
+  // Add user management for admin
+  if (isAdmin) {
+    menuItems.push({ id: 'usuarios', label: 'Usuários', icon: UserPlus });
+  }
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 

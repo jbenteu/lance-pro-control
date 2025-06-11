@@ -1,40 +1,35 @@
 
 import React, { useState } from 'react';
-import { LicitacaoProvider } from '@/contexts/LicitacaoContext';
 import Layout from '@/components/Layout';
 import Dashboard from '@/components/Dashboard';
-import NovaLicitacao from '@/components/NovaLicitacao';
 import GerenciarFornecedores from '@/components/GerenciarFornecedores';
 import GerenciarOrgaos from '@/components/GerenciarOrgaos';
+import GerenciarUsuarios from '@/components/GerenciarUsuarios';
+import { useAuth } from '@/contexts/AuthContext';
 
-const Index = () => {
+const Index: React.FC = () => {
   const [currentView, setCurrentView] = useState('dashboard');
-
-  const handleNavigate = (view: string) => {
-    setCurrentView(view);
-  };
+  const { isAdmin } = useAuth();
 
   const renderCurrentView = () => {
     switch (currentView) {
       case 'dashboard':
-        return <Dashboard onNovaLicitacao={() => setCurrentView('nova-licitacao')} />;
-      case 'nova-licitacao':
-        return <NovaLicitacao onVoltar={() => setCurrentView('dashboard')} />;
+        return <Dashboard />;
       case 'fornecedores':
-        return <GerenciarFornecedores onVoltar={() => setCurrentView('dashboard')} />;
+        return <GerenciarFornecedores />;
       case 'orgaos':
-        return <GerenciarOrgaos onVoltar={() => setCurrentView('dashboard')} />;
+        return <GerenciarOrgaos />;
+      case 'usuarios':
+        return isAdmin ? <GerenciarUsuarios /> : <Dashboard />;
       default:
-        return <Dashboard onNovaLicitacao={() => setCurrentView('nova-licitacao')} />;
+        return <Dashboard />;
     }
   };
 
   return (
-    <LicitacaoProvider>
-      <Layout currentView={currentView} onNavigate={handleNavigate}>
-        {renderCurrentView()}
-      </Layout>
-    </LicitacaoProvider>
+    <Layout currentView={currentView} onNavigate={setCurrentView}>
+      {renderCurrentView()}
+    </Layout>
   );
 };
 
