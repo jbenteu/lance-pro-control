@@ -21,8 +21,8 @@ const GerenciarCotacoes: React.FC<GerenciarCotacoesProps> = ({ licitacao, onVolt
   const [itemSelecionado, setItemSelecionado] = useState<string | null>(null);
   const [editandoCotacao, setEditandoCotacao] = useState<string | null>(null);
 
-  const calcularValores = (cotacao: Partial<Cotacao>, item: Item) => {
-    const novaCotacao = { ...cotacao };
+  const calcularValores = (cotacao: Partial<Cotacao>, item: Item): Cotacao => {
+    const novaCotacao = { ...cotacao } as Cotacao;
     
     // Calcular valor total
     if (cotacao.valorUnitario) {
@@ -44,7 +44,7 @@ const GerenciarCotacoes: React.FC<GerenciarCotacoesProps> = ({ licitacao, onVolt
 
   const adicionarCotacao = (itemId: string) => {
     const novaCotacao: Cotacao = {
-      id: `${Date.now()}-${Math.random()}`,
+      id: `cotacao-${Date.now()}-${Math.random()}`,
       fornecedorId: '',
       valorUnitario: 0,
       valorTotal: 0,

@@ -5,15 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, Filter, FileText, Calendar, MapPin } from 'lucide-react';
+import { Plus, Search, Filter, FileText, Calendar, MapPin, Settings } from 'lucide-react';
 import { useLicitacao } from '@/contexts/LicitacaoContext';
 import { StatusLicitacao } from '@/types/licitacao';
 
 interface DashboardProps {
   onNovaLicitacao: () => void;
+  onGerenciarCotacoes: (licitacaoId: string) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onNovaLicitacao }) => {
+const Dashboard: React.FC<DashboardProps> = ({ onNovaLicitacao, onGerenciarCotacoes }) => {
   const { licitacoes } = useLicitacao();
   const [filtroStatus, setFiltroStatus] = useState<StatusLicitacao | 'todos'>('todos');
   const [buscaTexto, setBuscaTexto] = useState('');
@@ -168,9 +169,19 @@ const Dashboard: React.FC<DashboardProps> = ({ onNovaLicitacao }) => {
                       {licitacao.modalidade} - {licitacao.orgaoResponsavel.nome}
                     </p>
                   </div>
-                  <Badge className={getStatusColor(licitacao.status)}>
-                    {licitacao.status}
-                  </Badge>
+                  <div className="flex items-center space-x-2">
+                    <Badge className={getStatusColor(licitacao.status)}>
+                      {licitacao.status}
+                    </Badge>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onGerenciarCotacoes(licitacao.id)}
+                    >
+                      <Settings className="w-4 h-4 mr-2" />
+                      Cotações
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
