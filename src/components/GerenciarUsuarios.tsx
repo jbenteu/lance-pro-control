@@ -37,7 +37,7 @@ const GerenciarUsuarios: React.FC = () => {
     }
 
     try {
-      // Create user in auth.users table
+      // Create user using the admin client
       const { data, error } = await supabase.auth.admin.createUser({
         email: email.trim(),
         password: senha,
@@ -195,7 +195,7 @@ const GerenciarUsuarios: React.FC = () => {
             Informações
           </CardTitle>
           <CardDescription>
-            Apenas administradores podem criar novos usuários
+            Apenas superadministradores podem criar novos usuários
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -203,6 +203,7 @@ const GerenciarUsuarios: React.FC = () => {
             <p>• O email deve ser único no sistema</p>
             <p>• A senha deve ter pelo menos 6 caracteres</p>
             <p>• Os usuários criados poderão fazer login imediatamente</p>
+            <p>• Novos usuários recebem o role padrão de "user"</p>
           </div>
         </CardContent>
       </Card>

@@ -122,12 +122,6 @@ const Login: React.FC = () => {
             >
               {loading ? 'Entrando...' : 'Entrar'}
             </Button>
-
-            <div className="text-center text-sm text-gray-500 mt-4">
-              <p>Usuários de teste:</p>
-              <p>joaobenteu@sistema.com / @Brasil1!</p>
-              <p>vns@sistema.com / @Brasil1!</p>
-            </div>
           </form>
         </CardContent>
       </Card>

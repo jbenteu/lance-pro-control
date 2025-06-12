@@ -14,7 +14,7 @@ import { useLicitacao } from '@/contexts/LicitacaoContext';
 const Index: React.FC = () => {
   const [currentView, setCurrentView] = useState('dashboard');
   const [licitacaoSelecionada, setLicitacaoSelecionada] = useState<string | null>(null);
-  const { isAdmin } = useAuth();
+  const { isSuperAdmin } = useAuth();
   const { licitacoes } = useLicitacao();
 
   const handleNovaLicitacao = () => {
@@ -50,7 +50,7 @@ const Index: React.FC = () => {
       case 'orgaos':
         return <GerenciarOrgaos onVoltar={handleVoltar} />;
       case 'usuarios':
-        return isAdmin ? <GerenciarUsuarios /> : <Dashboard onNovaLicitacao={handleNovaLicitacao} onGerenciarCotacoes={handleGerenciarCotacoes} onVisualizarProcessos={handleVisualizarProcessos} />;
+        return isSuperAdmin ? <GerenciarUsuarios /> : <Dashboard onNovaLicitacao={handleNovaLicitacao} onGerenciarCotacoes={handleGerenciarCotacoes} onVisualizarProcessos={handleVisualizarProcessos} />;
       case 'nova-licitacao':
         return <NovaLicitacao onVoltar={handleVoltar} />;
       case 'gerenciar-cotacoes':
