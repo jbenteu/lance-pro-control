@@ -12,6 +12,7 @@ import { Plus, Edit, Trash2, Phone, Mail, Globe, ArrowLeft } from 'lucide-react'
 import { useLicitacao } from '@/contexts/LicitacaoContext';
 import { Fornecedor } from '@/types/licitacao';
 import { useToast } from '@/hooks/use-toast';
+import RamoAtuacaoSelector from './RamoAtuacaoSelector';
 
 interface GerenciarFornecedoresProps {
   onVoltar: () => void;
@@ -81,7 +82,7 @@ const GerenciarFornecedores: React.FC<GerenciarFornecedoresProps> = ({ onVoltar 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.empresa || !formData.nomeContato || !formData.telefone || !formData.email || !formData.cnpj || !formData.uf) {
+    if (!formData.empresa || !formData.nomeContato || !formData.telefone || !formData.email || !formData.cnpj || !formData.uf || !formData.ramoAtuacao) {
       toast({
         title: "Erro",
         description: "Preencha todos os campos obrigatórios",
@@ -164,13 +165,10 @@ const GerenciarFornecedores: React.FC<GerenciarFornecedoresProps> = ({ onVoltar 
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="ramoAtuacao">Ramo de Atuação*</Label>
-                  <Input
-                    id="ramoAtuacao"
+                <div className="md:col-span-2">
+                  <RamoAtuacaoSelector
                     value={formData.ramoAtuacao}
-                    onChange={(e) => setFormData({...formData, ramoAtuacao: e.target.value})}
-                    placeholder="Ex: Tecnologia, Construção..."
+                    onChange={(value) => setFormData({...formData, ramoAtuacao: value})}
                     required
                   />
                 </div>
