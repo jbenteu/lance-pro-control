@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -13,7 +14,16 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, user } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (user) {
+      console.log('User detected, redirecting to dashboard');
+      navigate('/', { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,9 +49,11 @@ const Login: React.FC = () => {
       } else {
         setError('Erro ao fazer login. Tente novamente.');
       }
+      setLoading(false);
+    } else {
+      console.log('Login successful, should redirect automatically');
+      // Don't set loading to false here, let the redirect handle it
     }
-    
-    setLoading(false);
   };
 
   return (
@@ -123,6 +135,12 @@ const Login: React.FC = () => {
               {loading ? 'Entrando...' : 'Entrar'}
             </Button>
           </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Para testar, use: <strong>joaobenteu@sistema.com</strong>
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>

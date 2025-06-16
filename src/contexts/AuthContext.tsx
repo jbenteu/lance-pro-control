@@ -59,33 +59,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session:', session);
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        fetchUserRole(session.user.id);
-      } else {
-        setUserRole(null);
-      }
-      
-      setLoading(false);
-    });
+    let mounted = true;
 
-    // Listen for auth changes
+    // Listen for auth changes first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log('Auth state changed:', event, session);
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
+        
+        if (!mounted) return;
+
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
           // Defer the role fetch to avoid blocking auth state updates
           setTimeout(() => {
-            fetchUserRole(session.user.id);
-          }, 0);
+            if (mounted) {
+              fetchUserRole(session.user.id);
+            }
+          }, 100);
         } else {
           setUserRole(null);
         }
@@ -94,7 +86,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    return () => subscription.unsubscribe();
+    // Get initial session
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting initial session:', error);
+        }
+        
+        console.log('Initial session:', session?.user?.email || 'No session');
+        
+        if (!mounted) return;
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          await fetchUserRole(session.user.id);
+        } else {
+          setUserRole(null);
+        }
+        
+        setLoading(false);
+      } catch (err) {
+        console.error('Exception getting initial session:', err);
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    getInitialSession();
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -107,7 +135,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         password: password,
       });
       
-      console.log('Sign in response:', { data, error });
+      console.log('Sign in response:', { 
+        user: data.user?.email || 'No user', 
+        session: data.session ? 'Session exists' : 'No session',
+        error: error?.message || 'No error' 
+      });
       
       if (error) {
         console.error('Sign in error:', error);
@@ -115,6 +147,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { error };
       }
       
+      // Don't set loading to false here, let the auth state change handle it
       return { error: null };
     } catch (err) {
       console.error('Sign in exception:', err);
@@ -124,6 +157,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
+    console.log('Signing out user');
     setUserRole(null);
     await supabase.auth.signOut();
   };

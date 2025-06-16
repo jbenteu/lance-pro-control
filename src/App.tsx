@@ -24,6 +24,11 @@ const queryClient = new QueryClient({
 const AuthenticatedRoutes: React.FC = () => {
   const { user, loading } = useAuth();
 
+  console.log('AuthenticatedRoutes render:', { 
+    user: user?.email || 'No user', 
+    loading 
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
