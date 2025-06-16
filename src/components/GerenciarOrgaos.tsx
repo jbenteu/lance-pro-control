@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Edit, Trash2, Building, ArrowLeft } from 'lucide-react';
+import { Plus, Edit, Trash2, Building, ArrowLeft, MapPin } from 'lucide-react';
 import { useLicitacao } from '@/contexts/LicitacaoContext';
 import { Orgao } from '@/types/licitacao';
 import { useToast } from '@/hooks/use-toast';
@@ -13,6 +14,12 @@ import { useToast } from '@/hooks/use-toast';
 interface GerenciarOrgaosProps {
   onVoltar: () => void;
 }
+
+const estadosBrasil = [
+  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
+  'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
+  'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+];
 
 const GerenciarOrgaos: React.FC<GerenciarOrgaosProps> = ({ onVoltar }) => {
   const { orgaos, addOrgao, updateOrgao, deleteOrgao } = useLicitacao();
@@ -23,13 +30,17 @@ const GerenciarOrgaos: React.FC<GerenciarOrgaosProps> = ({ onVoltar }) => {
   
   const [formData, setFormData] = useState({
     nome: '',
-    uasg: ''
+    uasg: '',
+    cidade: '',
+    estado: ''
   });
 
   const resetForm = () => {
     setFormData({
       nome: '',
-      uasg: ''
+      uasg: '',
+      cidade: '',
+      estado: ''
     });
     setOrgaoEditando(null);
   };
@@ -42,7 +53,9 @@ const GerenciarOrgaos: React.FC<GerenciarOrgaosProps> = ({ onVoltar }) => {
   const abrirDialogoEdicao = (orgao: Orgao) => {
     setFormData({
       nome: orgao.nome,
-      uasg: orgao.uasg
+      uasg: orgao.uasg,
+      cidade: orgao.cidade || '',
+      estado: orgao.estado || ''
     });
     setOrgaoEditando(orgao);
     setDialogAberto(true);
@@ -144,6 +157,35 @@ const GerenciarOrgaos: React.FC<GerenciarOrgaosProps> = ({ onVoltar }) => {
                 />
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="cidade">Cidade</Label>
+                <Input
+                  id="cidade"
+                  value={formData.cidade}
+                  onChange={(e) => setFormData({...formData, cidade: e.target.value})}
+                  placeholder="Ex: São Paulo"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="estado">Estado</Label>
+                <Select 
+                  value={formData.estado} 
+                  onValueChange={(value) => setFormData({...formData, estado: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {estadosBrasil.map((estado) => (
+                      <SelectItem key={estado} value={estado}>
+                        {estado}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="flex justify-end space-x-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setDialogAberto(false)}>
                   Cancelar
@@ -188,6 +230,21 @@ const GerenciarOrgaos: React.FC<GerenciarOrgaosProps> = ({ onVoltar }) => {
                     <p className="font-medium text-sm">UASG:</p>
                     <p className="text-lg font-mono">{orgao.uasg}</p>
                   </div>
+                  
+                  {(orgao.cidade || orgao.estado) && (
+                    <div>
+                      <p className="font-medium text-sm flex items-center">
+                        <MapPin className="w-4 h-4 mr-1" />
+                        Localização:
+                      </p>
+                      <p className="text-sm">
+                        {orgao.cidade && orgao.estado 
+                          ? `${orgao.cidade}, ${orgao.estado}`
+                          : orgao.cidade || orgao.estado
+                        }
+                      </p>
+                    </div>
+                  )}
                   
                   <div className="flex justify-end space-x-2 pt-2">
                     <Button

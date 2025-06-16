@@ -35,9 +35,9 @@ const estadosBrasil = [
 
 // Dados iniciais de exemplo
 const orgaosIniciais: Orgao[] = [
-  { id: '1', nome: 'Prefeitura Municipal', uasg: '123456' },
-  { id: '2', nome: 'Governo do Estado', uasg: '654321' },
-  { id: '3', nome: 'Ministério da Saúde', uasg: '789123' },
+  { id: '1', nome: 'Prefeitura Municipal', uasg: '123456', cidade: 'São Paulo', estado: 'SP' },
+  { id: '2', nome: 'Governo do Estado', uasg: '654321', cidade: 'Rio de Janeiro', estado: 'RJ' },
+  { id: '3', nome: 'Ministério da Saúde', uasg: '789123', cidade: 'Brasília', estado: 'DF' },
 ];
 
 const fornecedoresIniciais: Fornecedor[] = [

@@ -16,6 +16,8 @@ export interface Orgao {
   id: string;
   nome: string;
   uasg: string;
+  cidade?: string;
+  estado?: string;
 }
 
 export interface Cotacao {
