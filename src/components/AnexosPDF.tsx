@@ -55,8 +55,8 @@ const AnexosPDF: React.FC<AnexosPDFProps> = ({ licitacaoId }) => {
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) { // 10MB limit
-      toast.error('Arquivo muito grande. Máximo 10MB');
+    if (file.size > 20 * 1024 * 1024) { // 20MB limit
+      toast.error('Arquivo muito grande. Máximo 20MB');
       return;
     }
 
@@ -193,7 +193,7 @@ const AnexosPDF: React.FC<AnexosPDFProps> = ({ licitacaoId }) => {
                   Adicionar arquivo PDF
                 </span>
                 <span className="mt-1 block text-xs text-gray-500">
-                  Máximo 10MB
+                  Máximo 20MB
                 </span>
               </label>
               <Input
