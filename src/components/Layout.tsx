@@ -13,7 +13,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { signOut, isAdmin } = useAuth();
+  const { signOut, isSuperAdmin } = useAuth();
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: FileText },
@@ -21,8 +21,8 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate }) =>
     { id: 'orgaos', label: 'Órgãos', icon: Building },
   ];
 
-  // Add user management for admin
-  if (isAdmin) {
+  // Add user management for superadmin only
+  if (isSuperAdmin) {
     menuItems.push({ id: 'usuarios', label: 'Usuários', icon: UserPlus });
   }
 

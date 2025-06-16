@@ -135,12 +135,6 @@ const Login: React.FC = () => {
               {loading ? 'Entrando...' : 'Entrar'}
             </Button>
           </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Para testar, use: <strong>joaobenteu@sistema.com</strong>
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>
