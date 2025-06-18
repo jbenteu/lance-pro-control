@@ -14,10 +14,10 @@ import { useLicitacao } from '@/contexts/LicitacaoContext';
 const Index: React.FC = () => {
   const [currentView, setCurrentView] = useState('dashboard');
   const [licitacaoSelecionada, setLicitacaoSelecionada] = useState<string | null>(null);
-  const { isSuperAdmin } = useAuth();
+  const { isSuperAdmin, roleLoading } = useAuth();
   const { licitacoes } = useLicitacao();
 
-  console.log('Index render - isSuperAdmin:', isSuperAdmin, 'currentView:', currentView);
+  console.log('Index render - isSuperAdmin:', isSuperAdmin, 'currentView:', currentView, 'roleLoading:', roleLoading);
 
   const handleNovaLicitacao = () => {
     setCurrentView('nova-licitacao');
@@ -52,8 +52,10 @@ const Index: React.FC = () => {
       case 'orgaos':
         return <GerenciarOrgaos onVoltar={handleVoltar} />;
       case 'usuarios':
-        // Only show user management for superadmin
-        return isSuperAdmin ? <GerenciarUsuarios /> : <Dashboard onNovaLicitacao={handleNovaLicitacao} onGerenciarCotacoes={handleGerenciarCotacoes} onVisualizarProcessos={handleVisualizarProcessos} />;
+        // Only show user management for superadmin - wait for role to load
+        return (!roleLoading && isSuperAdmin) ? 
+          <GerenciarUsuarios /> : 
+          <Dashboard onNovaLicitacao={handleNovaLicitacao} onGerenciarCotacoes={handleGerenciarCotacoes} onVisualizarProcessos={handleVisualizarProcessos} />;
       case 'nova-licitacao':
         return <NovaLicitacao onVoltar={handleVoltar} />;
       case 'gerenciar-cotacoes':

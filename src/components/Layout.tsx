@@ -13,7 +13,9 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { signOut, isSuperAdmin } = useAuth();
+  const { signOut, isSuperAdmin, roleLoading } = useAuth();
+
+  console.log('Layout render - isSuperAdmin:', isSuperAdmin, 'roleLoading:', roleLoading);
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: FileText },
@@ -21,8 +23,9 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate }) =>
     { id: 'orgaos', label: 'Órgãos', icon: Building },
   ];
 
-  // Add user management for superadmin only
-  if (isSuperAdmin) {
+  // Add user management for superadmin only - wait for role to load
+  if (!roleLoading && isSuperAdmin) {
+    console.log('Adding Usuários menu item for superadmin');
     menuItems.push({ id: 'usuarios', label: 'Usuários', icon: UserPlus });
   }
 
@@ -31,6 +34,18 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate }) =>
   const handleSignOut = async () => {
     await signOut();
   };
+
+  // Show loading spinner while role is loading
+  if (roleLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <p className="text-sm text-muted-foreground">Carregando permissões...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

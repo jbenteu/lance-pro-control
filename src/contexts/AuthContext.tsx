@@ -12,6 +12,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isSuperAdmin: boolean;
   userRole: string | null;
+  roleLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,6 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [roleLoading, setRoleLoading] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
 
   // Check user roles based on the database
@@ -37,6 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchUserRole = async (userId: string) => {
     try {
       console.log('Fetching user role for:', userId);
+      setRoleLoading(true);
       
       const { data, error } = await supabase
         .from('user_roles')
@@ -46,15 +49,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Error fetching user role:', error);
-        setUserRole('user'); // Default role
+        // Check if user is the hardcoded superadmin
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData.user?.email === 'joaobenteu@sistema.com') {
+          console.log('Setting hardcoded superadmin role');
+          setUserRole('superadmin');
+        } else {
+          setUserRole('user'); // Default role
+        }
+        setRoleLoading(false);
         return;
       }
 
       console.log('User role fetched:', data?.role);
       setUserRole(data?.role || 'user');
+      setRoleLoading(false);
     } catch (err) {
       console.error('Exception fetching user role:', err);
-      setUserRole('user'); // Default role
+      // Check if user is the hardcoded superadmin
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user?.email === 'joaobenteu@sistema.com') {
+        console.log('Setting hardcoded superadmin role (exception case)');
+        setUserRole('superadmin');
+      } else {
+        setUserRole('user'); // Default role
+      }
+      setRoleLoading(false);
     }
   };
 
@@ -72,14 +92,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Defer the role fetch to avoid blocking auth state updates
-          setTimeout(() => {
-            if (mounted) {
-              fetchUserRole(session.user.id);
-            }
-          }, 100);
+          // Fetch role immediately when user logs in
+          await fetchUserRole(session.user.id);
         } else {
           setUserRole(null);
+          setRoleLoading(false);
         }
         
         setLoading(false);
@@ -106,6 +123,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           await fetchUserRole(session.user.id);
         } else {
           setUserRole(null);
+          setRoleLoading(false);
         }
         
         setLoading(false);
@@ -113,6 +131,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Exception getting initial session:', err);
         if (mounted) {
           setLoading(false);
+          setRoleLoading(false);
         }
       }
     };
@@ -159,6 +178,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     console.log('Signing out user');
     setUserRole(null);
+    setRoleLoading(false);
     await supabase.auth.signOut();
   };
 
@@ -171,6 +191,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isAdmin,
     isSuperAdmin,
     userRole,
+    roleLoading,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
