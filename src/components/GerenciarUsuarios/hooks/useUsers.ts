@@ -11,7 +11,7 @@ export const useUsers = () => {
     try {
       console.log('Fetching users...');
       
-      // Buscar usuários da tabela auth.users (via RPC se necessário) e profiles
+      // Buscar usuários da tabela profiles
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*');
@@ -55,19 +55,23 @@ export const useUsers = () => {
   const createUser = async (nome: string, email: string, senha: string) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.admin.createUser({
-        email: email.trim(),
-        password: senha,
-        user_metadata: { nome: nome.trim() },
-        email_confirm: true
+      console.log('Creating user via Edge Function...');
+      
+      const { data, error } = await supabase.functions.invoke('create-user', {
+        body: { nome, email, senha }
       });
 
       if (error) {
-        console.error('Error creating user:', error);
+        console.error('Error from Edge Function:', error);
         throw error;
       }
 
-      console.log('User created successfully:', data);
+      if (data.error) {
+        console.error('Error creating user:', data.error);
+        throw new Error(data.error);
+      }
+
+      console.log('User created successfully via Edge Function:', data);
       await fetchUsers();
       return { success: true };
     } catch (error) {
@@ -81,13 +85,23 @@ export const useUsers = () => {
   const updateUser = async (userId: string, updates: { email?: string; password?: string }) => {
     setLoading(true);
     try {
-      const { error } = await supabase.auth.admin.updateUserById(userId, updates);
+      console.log('Updating user via Edge Function...');
+      
+      const { data, error } = await supabase.functions.invoke('update-user', {
+        body: { userId, updates }
+      });
 
       if (error) {
-        console.error('Error updating user:', error);
+        console.error('Error from Edge Function:', error);
         throw error;
       }
 
+      if (data.error) {
+        console.error('Error updating user:', data.error);
+        throw new Error(data.error);
+      }
+
+      console.log('User updated successfully via Edge Function:', data);
       await fetchUsers();
       return { success: true };
     } catch (error) {
@@ -100,13 +114,23 @@ export const useUsers = () => {
 
   const deleteUser = async (userId: string) => {
     try {
-      const { error } = await supabase.auth.admin.deleteUser(userId);
+      console.log('Deleting user via Edge Function...');
+      
+      const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: { userId }
+      });
 
       if (error) {
-        console.error('Error deleting user:', error);
+        console.error('Error from Edge Function:', error);
         throw error;
       }
 
+      if (data.error) {
+        console.error('Error deleting user:', data.error);
+        throw new Error(data.error);
+      }
+
+      console.log('User deleted successfully via Edge Function:', data);
       await fetchUsers();
       return { success: true };
     } catch (error) {
